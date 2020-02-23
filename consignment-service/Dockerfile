@@ -9,7 +9,7 @@ WORKDIR go-shippy/consignment-service
 # 将代码复制到工作目录中
 COPY . .
 RUN export GOPROXY=https://mirrors.aliyun.com/goproxy/
-RUN go mod init go-shippy
+RUN go mod init github.com/dhwell/go-shippy
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go env -w GOSUMDB="sum.golang.google.cn"
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
