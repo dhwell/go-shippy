@@ -3,66 +3,58 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	microclient "github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/config/cmd"
 	"io/ioutil"
 	"log"
 	"os"
-	pb "shippy/consignment-service/proto/consignment"
-
-	"google.golang.org/grpc"
+	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 )
 
 const (
-	ADDRESS           = "localhost:50051"
-	DEFAULT_INFO_FILE = "consignment-cli/consignment.json"
+	address         = "192.168.244.130:50051"
+	defaultFilename = "consignment.json"
 )
 
-func parseFile(fileName string) (*pb.Consignment, error) {
-	data, err := ioutil.ReadFile(fileName)
+func parseFile(file string) (*pb.Consignment, error) {
+	var consigment *pb.Consignment
+	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	var consignment *pb.Consignment
-	err = json.Unmarshal(data, &consignment)
-	if err != nil {
-		return nil, errors.New("consignment.json file content error")
-	}
-	return consignment, nil
+
+	json.Unmarshal(data, &consigment)
+	return consigment, err
 }
 
 func main() {
-	conn, err := grpc.Dial(ADDRESS, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("connect error: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewShippingServiceClient(conn)
-	// 在命令行中指定新的货物信息 json 文件
-	infoFile := DEFAULT_INFO_FILE
+	cmd.Init()
+
+	client := pb.NewShippingServiceClient("go.micro.srv.consignment", microclient.DefaultClient)
+
+	file := defaultFilename
 	if len(os.Args) > 1 {
-		infoFile = os.Args[1]
-	}
-	// 解析货物信息
-	consignment, err := parseFile(infoFile)
-	if err != nil {
-		log.Fatalf("parse info file error: %v", err)
+		file = os.Args[1]
 	}
 
-	// 调用 RPC
-	// 将货物存储到我们自己的仓库里
-	resp, err := client.CreateConsignment(context.Background(), consignment)
+	consignment, err := parseFile(file)
+
 	if err != nil {
-		log.Fatalf("create consignment error: %v", err)
+		log.Fatalf("Could not parse file: %v", err)
 	}
 
-	// 新货物是否托运成功
-	log.Printf("created: %t", resp.Created)
-	// 列出目前所有托运的货物
-	resp, err = client.GetConsignments(context.Background(), &pb.GetRequest{})
+	r, err := client.CreateConsignment(context.Background(), consignment)
 	if err != nil {
-		log.Fatalf("failed to list consignments: %v", err)
+		log.Fatalf("Could not greet: %v", err)
 	}
-	for _, c := range resp.Consignments {
-		log.Printf("%+v", c)
+
+	log.Printf("Created: %t", r.Created)
+
+	getAll, err := client.GetConsignments(context.Background(), &pb.GetRequest{})
+	if err != nil {
+		log.Fatalf("Could not list consignments: %v", err)
+	}
+	for _, v := range getAll.Consignments {
+		log.Println(v)
 	}
 }

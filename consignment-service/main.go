@@ -2,65 +2,63 @@ package main
 
 import (
 	"context"
-	"log"
-	"net"
-	pb "shippy/consignment-service/proto/consignment"
+	"fmt"
+	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 
-	"google.golang.org/grpc"
+	micro "github.com/micro/go-micro"
 )
 
-const PORT = ":50051"
-
-// 仓库接口
 type IRepository interface {
-	Create(consignment *pb.Consignment) (*pb.Consignment, error) // 存放新货物
+	Create(*pb.Consignment) (*pb.Consignment, error)
 	GetAll() []*pb.Consignment
 }
 
+// Repository - 模拟一个数据库，我们会在此后使用真正的数据库替代他
 type Repository struct {
 	consignments []*pb.Consignment
 }
 
 func (repo *Repository) Create(consignment *pb.Consignment) (*pb.Consignment, error) {
-	repo.consignments = append(repo.consignments, consignment)
+	updated := append(repo.consignments, consignment)
+	repo.consignments = updated
 	return consignment, nil
 }
-
 func (repo *Repository) GetAll() []*pb.Consignment {
 	return repo.consignments
 }
 
+// service要实现在proto中定义的所有方法。当你不确定时
+// 可以去对应的*.pb.go文件里查看需要实现的方法及其定义
 type service struct {
-	repo Repository
+	repo IRepository
 }
 
-// 获取目前所有托运的货物
-func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest) (*pb.Response, error) {
-	allConsignments := s.repo.GetAll()
-	resp := &pb.Response{Consignments: allConsignments}
-	return resp, nil
-}
-
-func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment) (*pb.Response, error) {
+// CreateConsignment - 在proto中，我们只给这个微服务定一个了一个方法
+// 就是这个CreateConsignment方法，它接受一个context以及proto中定义的
+// Consignment消息，这个Consignment是由gRPC的服务器处理后提供给你的
+func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, res *pb.Response) error {
 	consignment, err := s.repo.Create(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	resp := &pb.Response{Created: true, Consignment: consignment}
-	return resp, nil
+	res.Created = true
+	res.Consignment = consignment
+	return nil
 }
-
+func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest, res *pb.Response) error {
+	consignments := s.repo.GetAll()
+	res.Consignments = consignments
+	return nil
+}
 func main() {
-	listener, err := net.Listen("tcp", PORT)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	log.Printf("listen on: %s\n", PORT)
-
-	server := grpc.NewServer()
-	repo := Repository{}
-	pb.RegisterShippingServiceServer(server, &service{repo})
-	if err := server.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	repo := &Repository{}
+	// 注意，在这里我们使用go-micro的NewService方法来创建新的微服务服务器，
+	// 而不是上一篇文章中所用的标准
+	srv := micro.NewService(micro.Name("go.micro.srv.consignment"))
+	// Init方法会解析命令行flags
+	srv.Init()
+	pb.RegisterShippingServiceHandler(srv.Server(), &service{repo})
+	if err := srv.Run(); err != nil {
+		fmt.Println(err)
 	}
 }
