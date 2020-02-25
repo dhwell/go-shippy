@@ -1,9 +1,9 @@
 package main
 
 import (
+	pb "consignment-service/proto/consignment"
 	"context"
 	"fmt"
-	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 
 	micro "github.com/micro/go-micro"
 )
