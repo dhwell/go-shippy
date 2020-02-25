@@ -4,6 +4,7 @@ import (
 	pb "consignment-service/proto/consignment"
 	"context"
 	"fmt"
+	vesselProto "github.com/dhwell/go-shippy/vessel-service/proto/vessel"
 
 	micro "github.com/micro/go-micro"
 )
@@ -30,7 +31,8 @@ func (repo *Repository) GetAll() []*pb.Consignment {
 // service要实现在proto中定义的所有方法。当你不确定时
 // 可以去对应的*.pb.go文件里查看需要实现的方法及其定义
 type service struct {
-	repo IRepository
+	repo         IRepository
+	vesselClient vesselProto.VesselServiceClient
 }
 
 // CreateConsignment - 在proto中，我们只给这个微服务定一个了一个方法
