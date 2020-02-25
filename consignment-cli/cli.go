@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 	microclient "github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/config/cmd"
 	"io/ioutil"
 	"log"
 	"os"
-	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 )
 
 const (

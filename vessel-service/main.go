@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/micro/go-micro"
 	pb "vessel-service/proto/vessel"
 )

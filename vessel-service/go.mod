@@ -1,4 +1,4 @@
-module vessel-service
+module github.com/dhwell/go-shippy/vessel-service
 
 go 1.13
 

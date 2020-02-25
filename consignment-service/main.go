@@ -1,10 +1,11 @@
 package main
 
 import (
-	pb "consignment-service/proto/consignment"
 	"context"
 	"fmt"
+	pb "github.com/dhwell/go-shippy/consignment-service/proto/consignment"
 	vesselProto "github.com/dhwell/go-shippy/vessel-service/proto/vessel"
+	"log"
 
 	micro "github.com/micro/go-micro"
 )
@@ -39,6 +40,18 @@ type service struct {
 // 就是这个CreateConsignment方法，它接受一个context以及proto中定义的
 // Consignment消息，这个Consignment是由gRPC的服务器处理后提供给你的
 func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, res *pb.Response) error {
+	// 这里，我们通过货船服务的客户端对象，向货船服务发出了一个请求
+	vesselResponse, err := s.vesselClient.FindAvailable(context.Background(), &vesselProto.Specification{
+		MaxWeight: req.Weight,
+		Capacity:  int32(len(req.Containers)),
+	})
+
+	log.Printf("Found vessel: %s \n", vesselResponse.Vessel.Name)
+	if err != nil {
+		return err
+	}
+
+	req.VesselId = vesselResponse.Vessel.Id
 	consignment, err := s.repo.Create(req)
 	if err != nil {
 		return err
@@ -57,9 +70,12 @@ func main() {
 	// 注意，在这里我们使用go-micro的NewService方法来创建新的微服务服务器，
 	// 而不是上一篇文章中所用的标准
 	srv := micro.NewService(micro.Name("go.micro.srv.consignment"))
+	// 我们在这里使用预置的方法生成了一个货船服务的客户端对象
+	vesselClient := vesselProto.NewVesselServiceClient("go.micro.srv.vessel", srv.Client())
+
 	// Init方法会解析命令行flags
 	srv.Init()
-	pb.RegisterShippingServiceHandler(srv.Server(), &service{repo})
+	pb.RegisterShippingServiceHandler(srv.Server(), &service{repo, vesselClient})
 	if err := srv.Run(); err != nil {
 		fmt.Println(err)
 	}
