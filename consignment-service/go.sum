@@ -99,6 +99,9 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/decker502/dnspod-go v0.2.0/go.mod h1:qsurYu1FgxcDwfSwXJdLt4kRsBLZeosEb9uq4Sy+08g=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
+github.com/dhwell/go-shippy v0.0.0-20200225133209-5f761c62fa7a h1:LHBoyVH1QX2rVoTa4e2/sFe4S+m4S+exskw7B9+zjK8=
+github.com/dhwell/go-shippy/vessel-service v0.0.0-20200225142451-05daf7f9cce3 h1:vJZXA4ph7rHTOMD4WRUwhhK9CjiMa0bdd7olPExzsKU=
+github.com/dhwell/go-shippy/vessel-service v0.0.0-20200225142451-05daf7f9cce3/go.mod h1:RbKHH4i+VbqZg3cfCeQBGhWVtdctEegZi5QWk2miTZM=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dnaeon/go-vcr v0.0.0-20180814043457-aafff18a5cc2/go.mod h1:aBB1+wY4s93YsC3HHjMBMrwTj2R9FHDzUr9KyGc8n1E=
 github.com/dnsimple/dnsimple-go v0.30.0/go.mod h1:O5TJ0/U6r7AfT8niYNlmohpLbCSG+c71tQlGr9SeGrg=

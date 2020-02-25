@@ -12,6 +12,7 @@ RUN go mod download
 
 WORKDIR /go/release
 
+RUN ls
 ADD . .
 
 #编译应用
